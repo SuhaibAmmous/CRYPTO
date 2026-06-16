@@ -65,3 +65,74 @@ class SHA256:
             self._process_block(self._buffer[:64])
             self._buffer = self._buffer[64:]
         return self
+    def _process_block(self, block: bytes) -> None:
+        # 1. Prepare the 64-entry message schedule W.
+        w = list(struct.unpack(">16I", block))
+        for t in range(16, 64):
+            s0 = _rotr(w[t - 15], 7) ^ _rotr(w[t - 15], 18) ^ _shr(w[t - 15], 3)
+            s1 = _rotr(w[t - 2], 17) ^ _rotr(w[t - 2], 19) ^ _shr(w[t - 2], 10)
+            w.append((w[t - 16] + s0 + w[t - 7] + s1) & _MASK32)
+
+        # 2. Initialize working variables with the current hash value.
+        a, b, c, d, e, f, g, h = self._h
+
+        # 3. Main compression loop (64 rounds).
+        for t in range(64):
+            big_s1 = _rotr(e, 6) ^ _rotr(e, 11) ^ _rotr(e, 25)
+            ch = (e & f) ^ ((~e & _MASK32) & g)
+            t1 = (h + big_s1 + ch + _K[t] + w[t]) & _MASK32
+            big_s0 = _rotr(a, 2) ^ _rotr(a, 13) ^ _rotr(a, 22)
+            maj = (a & b) ^ (a & c) ^ (b & c)
+            t2 = (big_s0 + maj) & _MASK32
+            h = g
+            g = f
+            f = e
+            e = (d + t1) & _MASK32
+            d = c
+            c = b
+            b = a
+            a = (t1 + t2) & _MASK32
+
+        # 4. Add the compressed chunk to the current hash value.
+        self._h = [
+            (self._h[0] + a) & _MASK32,
+            (self._h[1] + b) & _MASK32,
+            (self._h[2] + c) & _MASK32,
+            (self._h[3] + d) & _MASK32,
+            (self._h[4] + e) & _MASK32,
+            (self._h[5] + f) & _MASK32,
+            (self._h[6] + g) & _MASK32,
+            (self._h[7] + h) & _MASK32,
+        ]
+
+    def _pad(self) -> bytes:
+        """Build the padding for the buffered remainder (FIPS 180-4 5.1.1)."""
+        ml_bits = self._msg_len * 8
+        pad = b"\x80"
+        # Pad with zeros so that (len(buffer) + 1 + zeros) % 64 == 56.
+        zeros = (56 - (self._msg_len + 1) % 64) % 64
+        pad += b"\x00" * zeros
+        pad += struct.pack(">Q", ml_bits & 0xFFFFFFFFFFFFFFFF)
+        return pad
+
+    def digest(self) -> bytes:
+        # Operate on a clone so the object can keep being updated afterwards.
+        clone = SHA256.__new__(SHA256)
+        clone._h = list(self._h)
+        clone._buffer = self._buffer
+        clone._msg_len = self._msg_len
+        clone.update(clone._pad())
+        return struct.pack(">8I", *clone._h)
+
+    def hexdigest(self) -> str:
+        return self.digest().hex()
+
+
+def sha256(data: bytes) -> bytes:
+    """One-shot helper: return the 32-byte SHA-256 digest of `data`."""
+    return SHA256(data).digest()
+
+
+def sha256_hex(data: bytes) -> str:
+    """One-shot helper: return the hex SHA-256 digest of `data`."""
+    return SHA256(data).hexdigest()
