@@ -9,8 +9,8 @@ Birzeit University — Faculty of Engineering and Technology
 
 | Name | ID |
 |------|----|
-| [Student 1 Name] | [ID] |
-| [Student 2 Name] | [ID] |
+| Mohammad Manasrah | 1211407 |
+| Suhaib Ammous | 1222517 |
 
 ---
 
@@ -37,5 +37,4 @@ SecureChannel/
 ├── tests/           # Official RFC/FIPS test vectors
 ├── main.py          # Entry point (--role server | client)
 ├── config.py        # Constants and PSK placeholder
-└── requirements.txt
 ```
