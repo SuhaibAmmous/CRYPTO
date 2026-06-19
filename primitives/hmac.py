@@ -32,11 +32,7 @@ def hmac_sha256_hex(key: bytes, message: bytes) -> str:
 
 
 def compare_digest(a: bytes, b: bytes) -> bool:
-    """Constant-time comparison of two byte strings.
-
-    Avoids early-exit timing leaks when verifying MAC tags. Implemented
-    from scratch (the standard library `hmac.compare_digest` is forbidden).
-    """
+   
     if len(a) != len(b):
         return False
     result = 0

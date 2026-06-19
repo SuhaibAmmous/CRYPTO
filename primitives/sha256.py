@@ -129,7 +129,6 @@ class SHA256:
 
 
 def sha256(data: bytes) -> bytes:
-    """One-shot helper: return the 32-byte SHA-256 digest of `data`."""
     return SHA256(data).digest()
 
 
