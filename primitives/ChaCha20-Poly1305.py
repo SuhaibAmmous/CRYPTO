@@ -10,13 +10,11 @@ class AEADError(Exception):
 
 
 def _poly1305_key_gen(key: bytes, nonce: bytes) -> bytes:
-    """Derive the one-time Poly1305 key from the ChaCha20 keystream (counter 0)."""
     block = chacha20_block(key, 0, nonce)
     return block[0:32]
 
 
 def _pad16(data: bytes) -> bytes:
-    """Zero padding to the next 16-byte boundary (empty if already aligned)."""
     rem = len(data) % 16
     return b"" if rem == 0 else b"\x00" * (16 - rem)
 
@@ -31,7 +29,6 @@ def _build_mac_data(aad: bytes, ciphertext: bytes) -> bytes:
 
 
 def encrypt(key: bytes, nonce: bytes, plaintext: bytes, aad: bytes = b"") -> bytes:
-    """AEAD-encrypt. Returns ciphertext || 16-byte tag."""
     if len(key) != 32:
         raise ValueError("key must be 32 bytes")
     if len(nonce) != 12:
@@ -44,7 +41,6 @@ def encrypt(key: bytes, nonce: bytes, plaintext: bytes, aad: bytes = b"") -> byt
 
 
 def decrypt(key: bytes, nonce: bytes, ciphertext_and_tag: bytes, aad: bytes = b"") -> bytes:
-    """AEAD-decrypt and verify. Returns plaintext, or raises AEADError."""
     if len(key) != 32:
         raise ValueError("key must be 32 bytes")
     if len(nonce) != 12:
