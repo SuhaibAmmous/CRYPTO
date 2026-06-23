@@ -1,0 +1,7 @@
+# Secret material — never commit
+psk.hex
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
