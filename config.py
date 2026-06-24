@@ -4,7 +4,14 @@ import pathlib
 # To generate a new one: python -c "import secrets; print(secrets.token_hex(32))" > psk.hex
 _PSK_FILE = pathlib.Path(__file__).parent / "psk.hex"
 try:
-    PSK: bytes = bytes.fromhex(_PSK_FILE.read_text().strip())
+    raw = _PSK_FILE.read_bytes()
+    if raw.startswith(b'\xff\xfe') or raw.startswith(b'\xfe\xff'):  # UTF-16
+        text = raw.decode('utf-16').strip()
+    elif raw.startswith(b'\xef\xbb\xbf'):   # UTF-8 with BOM
+        text = raw[3:].decode('utf-8').strip()
+    else:
+        text = raw.decode('utf-8').strip()
+    PSK: bytes = bytes.fromhex(text)
 except FileNotFoundError:
     raise SystemExit(
         "ERROR: psk.hex not found. "
