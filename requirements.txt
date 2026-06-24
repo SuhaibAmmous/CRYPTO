@@ -1,0 +1,4 @@
+# No third-party packages required.
+# All cryptographic primitives are implemented from scratch in pure Python.
+# Cross-checks in the test suite use only Python standard library modules:
+#   hashlib, hmac, os, struct, unittest
